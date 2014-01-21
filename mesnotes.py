@@ -87,7 +87,7 @@ def print_stats(netid, password):
             total_notes += note*ects
             total_ects += ects
         else:
-            print "\033[33m%s\033[0m: Points pas encore sortis"%(mnemonic)
+            print "\033[33m%s\033[0m: \033[35mPas encore de note\033[0m %s"%(mnemonic, name)
     if total_ects > 0:
         print "\033[1mMoyenne pondérée: %d\033[0m (basée uniquement sur les notes connues)"%(total_notes/total_ects)
 
