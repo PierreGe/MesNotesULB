@@ -1,4 +1,5 @@
 config.py
-notes.json
+available_notes.json
 .headers
 .cookies
+*.pyc
