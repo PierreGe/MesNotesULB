@@ -1,0 +1,5 @@
+GMAIL_USER = "<address>@gmail.com"
+GMAIL_PASSWORD = "<password>"
+TO_ADDR = "<groupid>@groups.facebook.com"
+ULB_USER = "<netid>"
+ULB_PASSWORD = "<password>"
