@@ -26,10 +26,19 @@ les outils standard (urllib, requests, mechanize, ...).
 Permet d'afficher l'ensemble du relevé de notes actuel, ainsi qu'une estimation
 de la moyenne pondérée. S'utilise uniquement en ligne de commande
 
+Utilisation: `python mesnotes.py netid [password]`
+
 ## notify_notes.py
 
-Permet d'envoyer un email dès qu'une nouvelle cote est disponible.
+Permet d'envoyer un email avec GMail dès qu'une nouvelle note est disponible.
 Il est intéressant de noter que les groupes Facebook ont une adresse email.
 
 Ce script nécessite un fichier de configuration. Un exemple est fourni dans
 `config.py.example`. Il peut être facilement utilisé dans un cron
+
+Utilisation:
+
+	cp config.py.exampe config.py
+	nano config.py
+	python notify_notes.py
+
