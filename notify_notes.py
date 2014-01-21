@@ -27,5 +27,5 @@ if len(diff) > 0:
 
 cache.update(diff)
 with open(CACHEFILE, 'w') as outFile:
-	outFile.write(json.dumps(list(cache)))
+	outFile.write(json.dumps(cache))
 
