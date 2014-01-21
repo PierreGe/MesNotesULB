@@ -4,6 +4,7 @@ import subprocess
 import re
 from BeautifulSoup import BeautifulSoup
 from urlparse import urlparse, urlunparse
+from unidecode import unidecode
 
 COOKIES = ".cookies"
 HEADERS = ".headers"
@@ -68,7 +69,7 @@ def get_notes(netid, password):
     soup = BeautifulSoup(page)
     atBegin = False
     for line in soup('table')[-1]('tr'):
-        cells = map(lambda x: x.text, line('td'))
+        cells = map(lambda x: unidecode(x.text), line('td'))
         if not atBegin:
             if cells[0] == 'NRE':
                 atBegin = True
