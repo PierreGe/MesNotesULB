@@ -7,25 +7,38 @@ from send_mail import mail
 
 CACHEFILE = 'available_notes.json'
 
-cache = {}
-try:
-	with open(CACHEFILE) as inFile:
-		cache = json.loads(inFile.read())
-except:
-	pass
+class Cache:
+	def __init__(self, filename, initial={}):
+		self.filename = filename
+		self.initial = initial
 
-diff = {}
-for mnemonic, name, ects, note in get_notes(ULB_USER, ULB_PASSWORD):
-	if note is not None and mnemonic not in cache:
-		diff[mnemonic] = name
+	def __enter__(self):
+		self.cache = self.initial
+		try:
+			self.cache = json.loads(open(self.filename).read())
+		except:
+			pass
+		return self.cache
 
-if len(diff) > 0:
-	changed = [k+' - '+diff[k] for k in diff]
-	message = "Les notes des cours suivants sont sorties: \n" 
-	message += "\n".join(changed) + "\nhttps://mon-ulb.ulb.ac.be/"
-	mail(TO_ADDR, "", message)
+	def __exit__(self, exc_type, exc_value, backtrace):
+		if exc_type is None:
+			try:
+				open(self.filename, 'w').write(json.dumps(self.cache))
+			except:
+				return False
+			return True
 
-cache.update(diff)
-with open(CACHEFILE, 'w') as outFile:
-	outFile.write(json.dumps(cache))
 
+with Cache(CACHEFILE) as cache:
+	diff = {}
+	for mnemonic, name, ects, note in get_notes(ULB_USER, ULB_PASSWORD):
+		if note is not None and mnemonic not in cache:
+			diff[mnemonic] = name
+
+	if len(diff) > 0:
+		changed = [k+' - '+diff[k] for k in diff]
+		message = "Les notes des cours suivants sont sorties: \n" 
+		message += "\n".join(changed) + "\nhttps://mon-ulb.ulb.ac.be/"
+		mail(TO_ADDR, "", message)
+
+	cache.update(diff)
