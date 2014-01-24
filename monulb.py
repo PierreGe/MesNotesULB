@@ -105,8 +105,5 @@ class MonULB(CURLSession):
         if page.ok:
             parser = NotesParser()
             parser.feed(page.body)
-            parser.courses.append(Course(
-                'Cours Diabolique', 'TITO-U-666', 5, 16
-            ))
             return parser.courses
 
