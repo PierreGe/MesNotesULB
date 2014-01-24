@@ -2,22 +2,14 @@
 
 Ce dépôt contient une collection de scripts pour accéder à MonULB.
 
-L'approche prise par ceux-ci peut sembler étrange, mais c'est la première à 
-fonctionner, puisque des erreurs de protocole TLS adviennent lorsqu'on utilise
-les outils standard (urllib, requests, mechanize, ...).
+Je n'ai, jusqu'ici, pas réussi à me connecter à MonULB en Python à l'aide des
+outils usuels (urllib2, requests, mechanize); ces scripts font donc appel à la
+commande curl (une approche qui semble fonctionner).
 
 ## Dépendances
 
-* Python 2, virtualenv, pip
+* Python 2
 * curl
-
-## Installation
-
-	git clone git@github.com:titouanc/MesNotesULB.git
-	cd MesNotesULB
-	virtualenv --distribute ve
-	source ve/bin/activate
-	pip install -r requirements.txt
 
 # Les scripts
 
@@ -26,19 +18,31 @@ les outils standard (urllib, requests, mechanize, ...).
 Permet d'afficher l'ensemble du relevé de notes actuel, ainsi qu'une estimation
 de la moyenne pondérée. S'utilise uniquement en ligne de commande
 
-Utilisation: `python mesnotes.py netid [password]`
+Utilisation: `python mesnotes.py [netid] [password]`
 
 ## notify_notes.py
 
-Permet d'envoyer un email avec GMail dès qu'une nouvelle note est disponible.
-Il est intéressant de noter que les groupes Facebook ont une adresse email.
-
-Ce script nécessite un fichier de configuration. Un exemple est fourni dans
-`config.py.example`. Il peut être facilement utilisé dans un cron
+Permet d'envoyer un message sur un groupe Facebook dès que sortent de nouvelles
+notes. Ce script nécessite un fichier de configuration. Un exemple est fourni 
+dans `config.py.example`. Il peut être facilement utilisé dans un cron. 
+*NB: Si les valeurs de configuration `ULB_USER` et `ULB_PASS` sont définies
+dans config.py, mesnotes.py les utilisera par défaut.*
 
 Utilisation:
 
 	cp config.py.exampe config.py
 	nano config.py
 	python notify_notes.py
+
+## Considérations de sécurité
+
+Ces scripts utilisent curl en ligne de commande, et font au moins une requête
+d'authentification: un utilisateur exécutant `top` ou `ps` pourrait voir le mot
+de passe en clair.
+
+D'autre part, afin d'éviter les erreurs de connexion à MonULB, les requêtes
+ne sont pas vérifiées et sont forcées à TLSv1.
+
+Enfin, le fichier config.py contient des informations sensibles (mots de passe).
+Il faut y faire **très attention**.
 
