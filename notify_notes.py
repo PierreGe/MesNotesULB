@@ -1,44 +1,22 @@
 # -*- coding: utf-8 -*-
 
-import json
-from config import TO_ADDR, ULB_USER, ULB_PASSWORD
-from mesnotes import get_notes
-from send_mail import mail
-
-CACHEFILE = 'available_notes.json'
-
-class Cache:
-    def __init__(self, filename=CACHEFILE, initial={}):
-        self.filename = filename
-        self.initial = initial
-
-    def __enter__(self):
-        self.cache = self.initial
-        try:
-            self.cache = json.loads(open(self.filename).read())
-        except:
-            pass
-        return self.cache
-
-    def __exit__(self, exc_type, exc_value, backtrace):
-        if exc_type is None:
-            try:
-                open(self.filename, 'w').write(json.dumps(self.cache))
-            except:
-                return False
-            return True
+from utils import Cache
+from monulb import MonULB
+from facebook import FacebookNotifier
+from config import ULB_USER, ULB_PASSWORD, GMAIL_USER, GMAIL_PASSWORD, FB_GROUPID 
 
 if __name__ == "__main__":
-    with Cache() as cache:
+    with Cache('available_notes.json') as cache:
         diff = {}
-        for mnemonic, name, ects, note in get_notes(ULB_USER, ULB_PASSWORD):
-            if note is not None and mnemonic not in cache:
-                diff[mnemonic] = name
+        for course in MonULB(ULB_USER, ULB_PASSWORD).notes():
+            if course.note is not None and course.mnemonic not in cache:
+                diff[course.mnemonic] = course.name
 
         if len(diff) > 0:
             changed = [k+' - '+diff[k] for k in diff]
             message = "Les notes des cours suivants sont sorties: \n" 
             message += "\n".join(changed) + "\nhttps://mon-ulb.ulb.ac.be/"
-            mail(TO_ADDR, "", message)
+            fb = FacebookNotifier(GMAIL_USER, GMAIL_PASSWORD)
+            fb.post_to_group(FB_GROUPID, message)
 
         cache.update(diff)

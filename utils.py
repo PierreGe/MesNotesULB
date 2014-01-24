@@ -1,6 +1,7 @@
 import tempfile
 import os
 import subprocess
+import json
 
 class Response(object):
     def __init__(self, code, headers, body):
@@ -74,3 +75,25 @@ class CURLSession(object):
         if maxfollows > 0 and response.redirect and 'Location' in response.headers:
             response = self.get(response.headers['Location'], maxfollows-1)
         return response
+
+class Cache:
+    """JSON-based persistent datastore providing context manager"""
+    def __init__(self, filename, initial={}):
+        self.filename = filename
+        self.initial = initial
+
+    def __enter__(self):
+        self.cache = self.initial
+        try:
+            self.cache = json.loads(open(self.filename).read())
+        except:
+            pass
+        return self.cache
+
+    def __exit__(self, exc_type, exc_value, backtrace):
+        if exc_type is None:
+            try:
+                open(self.filename, 'w').write(json.dumps(self.cache))
+            except:
+                return False
+            return True
