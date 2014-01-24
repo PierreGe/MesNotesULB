@@ -28,7 +28,7 @@ class FacebookNotifier(object):
         msg['From'] = self.email
         msg['To'] = to
         msg['Subject'] = subject
-        msg.attach(MIMEText(text))
+        msg.attach(MIMEText(text, _charset="UTF-8"))
 
         mailServer = smtplib.SMTP(self.host, self.port)
         mailServer.ehlo()
