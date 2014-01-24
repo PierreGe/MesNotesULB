@@ -20,7 +20,9 @@ class Course(object):
         return self._note
     @note.setter
     def note(self, value):
-        self._note = None if value is None else int(value)
+        if isinstance(value, str) or isinstance(value, unicode):
+            value = value.replace(',', '.') #Replace european decimal mark
+        self._note = None if value is None else float(value)
 
     def __str__(self):
         return ' '.join([str(self.mnemonic), str(self.ects), str(self.note), str(self.name)])
