@@ -24,7 +24,7 @@ if __name__ == "__main__":
             for course in MonULB(ULB_USER, ULB_PASSWORD).notes():
                 if course.note is not None:
                     color = 2 if course.note >= 12 else 1
-                    print '\033[33m%s\033[0m: \033[3%dm%d\033[0m "%s" (%d ECTS)'%(
+                    print '\033[33m%s\033[0m: \033[3%dm%.2f\033[0m "%s" (%d ECTS)'%(
                         course.mnemonic, color, course.note, course.name, course.ects
                     )
                     total_notes += course.note*course.ects
@@ -34,7 +34,9 @@ if __name__ == "__main__":
                         course.mnemonic, course.name
                     )
             if total_ects > 0:
-                print "\033[1mMoyenne pondérée: %d\033[0m (basée uniquement sur les notes connues)"%(total_notes/total_ects)
+                avg = total_notes/total_ects
+                color = 2 if avg >= 12 else 1
+                print "\033[1mMoyenne pondérée: \033[3%dm%.2f\033[0m (basée uniquement sur les notes connues)"%(color, avg)
 
         except MonULB.LoginError:
             print "\033[31mErreur de connexion\033[0m"
