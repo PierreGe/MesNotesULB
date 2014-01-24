@@ -23,8 +23,9 @@ if __name__ == "__main__":
             
             for course in MonULB(ULB_USER, ULB_PASSWORD).notes():
                 if course.note is not None:
-                    print '\033[33m%s\033[0m: %s "%s" (%d ECTS)'%(
-                        course.mnemonic, str(course.note), course.name, course.ects
+                    color = 2 if course.note >= 12 else 1
+                    print '\033[33m%s\033[0m: \033[3%dm%d\033[0m "%s" (%d ECTS)'%(
+                        course.mnemonic, color, course.note, course.name, course.ects
                     )
                     total_notes += course.note*course.ects
                     total_ects += course.ects
