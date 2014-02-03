@@ -37,12 +37,12 @@ if __name__ == '__main__':
             if not feedurl in cache:
                 cache[feedurl] = []
             for item in feed['entries']:
-                link = item['link']
-                if link not in cache[feedurl]:
+                link, text = item['link'], item['content'][0]['value']
+                if {link: text} not in cache[feedurl]:
                     parser = FeedContentParser()
-                    parser.feed(item['content'][0]['value'])
-                    message = parser.text + '\n' + link
+                    parser.feed(text)
+                    message = parser.text + '\n' + item['link']
                     fb = FacebookNotifier(GMAIL_USER, GMAIL_PASSWORD)
                     fb.post_to_group(FB_GROUPID, message)
-                    cache[feedurl].append(link)
-                    print link
+                    cache[feedurl].append({link: text})
+                    print item['link']
