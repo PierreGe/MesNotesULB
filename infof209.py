@@ -45,3 +45,4 @@ if __name__ == '__main__':
                     fb = FacebookNotifier(GMAIL_USER, GMAIL_PASSWORD)
                     fb.post_to_group(FB_GROUPID, message)
                     cache[feedurl].append(link)
+                    print link
