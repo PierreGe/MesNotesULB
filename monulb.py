@@ -1,7 +1,7 @@
 import re
 from HTMLParser import HTMLParser
 
-from utils import CURLSession
+import requests
 
 class Course(object):
     def __init__(self, name=None, mnemonic=None, ects=None, note=None):
@@ -74,38 +74,46 @@ class NotesParser(HTMLParser):
             elif self.inNotes:
                 self.last_text = t
 
-class MonULB(CURLSession):
+class MonULB():
     class LoginError(Exception):
         pass
 
     def __init__(self, netid, password):
-        super(MonULB, self).__init__('-k1')
-        self.login(netid, password)
+        self._loginItems = {
+            "user": netid,
+            "pass": password,
+            "uuid": None # identifiant dynamique 
+        }
+        self._headers = {
+            "Host":"mon-ulb.ulb.ac.be",
+            "User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:29.0) Gecko/20100101 Firefox/29.0",
+            "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language":"en-US,en;q=0.5",
+            "Accept-Encoding":"gzip, deflate",
+            "Connection":"keep-alive",
+            "Referer":"http://mon-ulb.ulb.ac.be/cp/home/loginf"
+        }
+        self._session = requests.session()
+        self._session.headers.update(self._headers)
+
+    def login(self):
+        page = self._session.get("https://mon-ulb.ulb.ac.be/cp/home/displaylogin")
+        match = re.search(r'document.cplogin.uuid.value="([^"]+)"', page.text)
+        if not match:
+            raise self.LoginError("Connection UUID not found")
+        self._loginItems["uuid"] = match.group(1)
+        page = self._session.post("https://mon-ulb.ulb.ac.be/cp/home/login", data=self._loginItems)
+        match = re.search(r'window.top.location=.*"([^"]+)"', page.text)
+        if not match:
+            raise self.LoginError("Wrong username/password pair")
+    
+    def notes(self):
+        self.login()
+        page = self._session.get("http://mon-ulb.ulb.ac.be/cp/ip/login?sys=sctssb&url=http%3A%2F%2Fbanssbfr.ulb.ac.be%2FPROD_frFR%2Fbzdispin.p_disprog")
+        if page.status_code == 200:
+            parser = NotesParser()
+            parser.feed(page.text)
+            return parser.courses
 
     def __repr__(self):
         return "<MonULB %s>"%(self.netid)
-
-    def login(self, netid, password):
-        page = self.get('https://mon-ulb.ulb.ac.be/cp/home/displaylogin')
-        match = re.search(r'document.cplogin.uuid.value="([^"]+)"', page.body)
-        if not match:
-            raise self.LoginError("Connection UUID not found")
-
-        page = self.post("https://mon-ulb.ulb.ac.be/cp/home/login", {
-            'uuid': match.group(1),
-            'user': netid,
-            'pass': password
-        })
-
-        match = re.search(r'window.top.location=.*"([^"]+)"', page.body)
-        if not match:
-            raise self.LoginError("Wrong username/password pair")
-        self.netid = netid
-    
-    def notes(self):
-        page = self.get('http://mon-ulb.ulb.ac.be/cp/ip/login?sys=sctssb&url=http%3A%2F%2Fbanssbfr.ulb.ac.be%2FPROD_frFR%2Fbzdispin.p_disprog')
-        if page.ok:
-            parser = NotesParser()
-            parser.feed(page.body)
-            return parser.courses
-
