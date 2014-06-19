@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import getpass
+
 from monulb import MonULB
 try:
     from config import ULB_USER, ULB_PASSWORD
@@ -17,7 +19,7 @@ if __name__ == "__main__":
             ULB_USER, ULB_PASSWORD = argv[1], ''
         total_notes, total_ects = 0, 0
         if not ULB_PASSWORD:
-            ULB_PASSWORD = argv[2] if len(argv) >= 3 else raw_input("Password: ")
+            ULB_PASSWORD = argv[2] if len(argv) >= 3 else getpass.getpass("Password:")
         print "Connexion..."
         try:
             
