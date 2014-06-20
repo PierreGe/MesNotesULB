@@ -1,7 +1,17 @@
 import re
 from HTMLParser import HTMLParser
 
+
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.poolmanager import PoolManager
+import ssl
+
+class AdapterMonULB(HTTPAdapter):
+    """ Cette classe permet d'utiliser TLSv1 """
+    def init_poolmanager(self, connections, maxsize, block=False):
+        self.poolmanager = PoolManager(num_pools=connections, maxsize=maxsize, block=block, ssl_version=ssl.PROTOCOL_TLSv1)
+
 
 class Course(object):
     def __init__(self, name=None, mnemonic=None, ects=None, note=None):
@@ -94,22 +104,23 @@ class MonULB():
             "Referer":"http://mon-ulb.ulb.ac.be/cp/home/loginf"
         }
         self._session = requests.session()
+        self._session.mount('https://', AdapterMonULB()) # pour l'erreur ssl de monULB
         self._session.headers.update(self._headers)
 
     def login(self):
-        page = self._session.get("https://mon-ulb.ulb.ac.be/cp/home/displaylogin")
+        page = self._session.get("https://mon-ulb.ulb.ac.be/cp/home/displaylogin",verify=False)
         match = re.search(r'document.cplogin.uuid.value="([^"]+)"', page.text)
         if not match:
             raise self.LoginError("Connection UUID not found")
         self._loginItems["uuid"] = match.group(1)
-        page = self._session.post("https://mon-ulb.ulb.ac.be/cp/home/login", data=self._loginItems)
+        page = self._session.post("https://mon-ulb.ulb.ac.be/cp/home/login", data=self._loginItems ,verify=False)
         match = re.search(r'window.top.location=.*"([^"]+)"', page.text)
         if not match:
             raise self.LoginError("Wrong username/password pair")
     
     def notes(self):
         self.login()
-        page = self._session.get("http://mon-ulb.ulb.ac.be/cp/ip/login?sys=sctssb&url=http%3A%2F%2Fbanssbfr.ulb.ac.be%2FPROD_frFR%2Fbzdispin.p_disprog")
+        page = self._session.get("http://mon-ulb.ulb.ac.be/cp/ip/login?sys=sctssb&url=http%3A%2F%2Fbanssbfr.ulb.ac.be%2FPROD_frFR%2Fbzdispin.p_disprog" ,verify=False)
         if page.status_code == 200:
             parser = NotesParser()
             parser.feed(page.text)
